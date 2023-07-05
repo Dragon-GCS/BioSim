@@ -1,0 +1,28 @@
+# 随机种子，0表示不使用随机种子
+seed = 0
+
+[world]
+# 世界宽度
+width = 512
+# 世界高度
+height = 512
+# 食物密度
+food_rate = 0.1
+# 食物刷新频率（年）
+food_refresh_rate = 10
+# 食物消耗频率（年）
+food_cost_rate = 2
+
+[creature]
+# 初始生物数量
+init_count = 100
+
+[gene]
+# 初始基因数量
+init_gene_count = 8
+# 基因密码子长度
+coden_length = 3
+# 基因密码子表, 0固定表示空白基因，表长度必须等于2^coden_length
+coden_table = ["", "智力", "智力", "体力", "体力", "体力", "幸运", "外貌"]
+# 基因突变率
+mutation_rate = 1e-5

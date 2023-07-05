@@ -1,0 +1,23 @@
+[build-system]
+build-backend = 'setuptools.build_meta'
+requires = ['setuptools']
+
+[project]
+name = 'BioSim'
+version = '0.0.1'
+dependencies = [
+    'pydantic',
+    'rtoml',
+]
+
+[[project.authors]]
+name = 'Dragon-GCS'
+email = '878173121@qq.com'
+
+[project.optional-dependencies]
+dev = []
+[tool.setuptools]
+packages = ['BioSim']
+
+[tool.start]
+dev-dependencies = []
