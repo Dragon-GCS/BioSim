@@ -1,7 +1,7 @@
 import random
 from functools import cached_property
 
-from biosim import config
+from ._config import config
 
 MASK = 2**config.gene.coden_length - 1  # 密码子掩码
 

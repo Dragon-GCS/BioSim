@@ -1,7 +1,6 @@
 from unittest import TestCase
 
-from biosim import config
-from biosim._creature import Genome
+from biosim import config, Genome
 
 
 class TestGenome(TestCase):
