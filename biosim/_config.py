@@ -18,7 +18,7 @@ class WorldConfig(BaseModel):
     height: int = 512  # 地图高度
     food_cost_rate: int = 2  # 食物消耗频率
     food_rate: float = 0.1  # 食物生成率
-    food_refresh_rate: int = 10  # 食物刷新率
+    food_refresh_year: int = 10  # 食物刷新间隔
     init_count: int = 100  # 初始生物数量
     year_per_second: int = 30  # 每秒回合数
 

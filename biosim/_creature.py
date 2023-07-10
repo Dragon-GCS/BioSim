@@ -61,29 +61,31 @@ class Creature:
         如果周围存在食物则移动到最远的食物处，否则随机移动到一个最远的位置
         寿命减1，食物不足时额外减1
         """
-        location = self._loc  # 扫描位置
+        location = self._loc  # 扫描起始位置
         self.map[self._loc] = 0  # 清空当前位置
         foods, creatures, outer = [], [], []
         max_radiums = min(self.perception, self.movement)
         # 扫描周围
         for radiums, direction in spiral_scan(self.perception):
             location += direction
-            item = self.map[location]
-            if item is None:
-                continue
-            elif isinstance(item, Creature):
-                creatures.append((radiums, location))
-            elif item:
-                foods.append((radiums, location))
-            elif radiums == max_radiums:
-                outer.append((radiums, location))
+            match self.map[location]:
+                case 0 if radiums == max_radiums:
+                    outer.append((radiums, location))
+                case 1:
+                    foods.append((radiums, location))
+                case 2:
+                    creatures.append((radiums, location))
+                case _:
+                    pass
+
         # TODO: interact with other creatures
         if foods and self.food <= config.creature.max_food:
-            _, location = max(foods)
-            self.map[self._loc] = 0
+            _, location = max(foods, key=lambda x: x[0])
+            # _, location = max(foods, key=lambda x: x[0])
             self.move(location)
         else:
             _, location = choice(outer)
             self.move(location)
-            self.food -= 1
-        self.life -= 1 + (self.food < 0)
+            self.food = max(0, self.food - 1)
+        self.life -= 1 + (self.food == 0)
+        self._genome.mutate()

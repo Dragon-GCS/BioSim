@@ -3,7 +3,7 @@ from ._config import config
 
 
 class Coordinate:
-    """保存各生物的坐标信息， 左下角为坐标原点，x轴向右，y轴向上，index为坐标在一维数组中的索引"""
+    """保存各生物的坐标信息， 左上角为坐标原点，x轴向右，y轴向下，index为坐标在一维数组中的索引"""
 
     __slots__ = ("x", "y")
 
@@ -29,17 +29,13 @@ class Coordinate:
         return Coordinate(self.x + other.x, self.y + other.y)
 
     def __iadd__(self, other: "Coordinate"):
-        self.x += other.x
-        self.y += other.y
-        return self
+        return self + other
 
     def __sub__(self, other: "Coordinate") -> "Coordinate":
         return Coordinate(self.x - other.x, self.y - other.y)
 
     def __isub__(self, other: "Coordinate"):
-        self.x -= other.x
-        self.y -= other.y
-        return self
+        return self - other
 
     def __eq__(self, other: "Coordinate") -> bool:
         return (self.x, self.y) == (other.x, other.y)

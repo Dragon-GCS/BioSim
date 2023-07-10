@@ -6,8 +6,11 @@ requires = ['setuptools']
 name = 'BioSim'
 version = '0.0.1'
 dependencies = [
+    'loguru',
+    'numpy',
     'pydantic',
     'rtoml',
+    'tqdm',
 ]
 
 [[project.authors]]
@@ -15,7 +18,7 @@ name = 'Dragon-GCS'
 email = '878173121@qq.com'
 
 [project.optional-dependencies]
-dev = []
+dev = ['viztracer']
 [tool.setuptools]
 packages = ['BioSim']
 
