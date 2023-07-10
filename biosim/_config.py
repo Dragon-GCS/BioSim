@@ -4,13 +4,7 @@ from pprint import pprint
 from typing import Literal, TypeAlias
 
 import rtoml
-from pydantic import (
-    BaseModel,
-    FieldValidationInfo,
-    ValidationError,
-    computed_field,
-    field_validator,
-)
+from pydantic import BaseModel, ValidationError, computed_field, model_validator
 
 ROOT = Path(__file__).parent
 
@@ -25,12 +19,22 @@ class WorldConfig(BaseModel):
     food_cost_rate: int = 2  # 食物消耗频率
     food_rate: float = 0.1  # 食物生成率
     food_refresh_rate: int = 10  # 食物刷新率
+    init_count: int = 100  # 初始生物数量
+    year_per_second: int = 30  # 每秒回合数
+
+    @model_validator(mode="after")
+    def check_init_num(self) -> "WorldConfig":
+        assert (
+            self.init_count < self.width * self.height
+        ), f"初始生物数量过多：{self.init_count} >= {self.width} * {self.height}"
+        return self
 
 
 class CreatureConfig(BaseModel):
     """生物相关配置"""
 
-    init_count: int = 100  # 初始生物数量
+    max_food: int = 3  # 食物上限
+    life: int = 30  # 生命值
 
 
 class GeneConfig(BaseModel):
@@ -41,11 +45,12 @@ class GeneConfig(BaseModel):
     coden_table: list[Trait] = ["", "智力", "智力", "体力", "体力", "体力", "幸运", "外貌"]  # 密码子对应的性状
     mutation_rate: float = 1e-5  # 突变率
 
-    @field_validator("coden_table", mode="after")
-    def ensure_length(cls, v, values: FieldValidationInfo):
-        coden_length = values.data["coden_length"]
-        assert len(v) == 2**coden_length, f"coden_table长度[{len(v)}]不等于2^{coden_length}"
-        return v
+    @model_validator(mode="after")
+    def ensure_length(self) -> "GeneConfig":
+        assert (
+            len(self.coden_table) == 2**self.coden_length
+        ), f"coden_table长度[{len(self.coden_table)}]不等于{2**self.coden_length}"
+        return self
 
     @computed_field
     @property

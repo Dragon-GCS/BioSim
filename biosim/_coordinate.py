@@ -31,6 +31,7 @@ class Coordinate:
     def __iadd__(self, other: "Coordinate"):
         self.x += other.x
         self.y += other.y
+        return self
 
     def __sub__(self, other: "Coordinate") -> "Coordinate":
         return Coordinate(self.x - other.x, self.y - other.y)
@@ -38,9 +39,10 @@ class Coordinate:
     def __isub__(self, other: "Coordinate"):
         self.x -= other.x
         self.y -= other.y
+        return self
 
     def __eq__(self, other: "Coordinate") -> bool:
-        return self.index == other.index
+        return (self.x, self.y) == (other.x, other.y)
 
     def __str__(self) -> str:
         return f"({self.x}, {self.y})"
