@@ -36,7 +36,7 @@ class Creature:
         return self._genome == other._genome
 
     def __hash__(self) -> int:
-        return hash(self._genome)
+        return hash(self._loc)
 
     @property
     def perception(self):
@@ -47,7 +47,11 @@ class Creature:
     def movement(self):
         return min(1 + self._genome.traits["体力"], 5)
 
-    def is_live(self) -> bool:
+    @property
+    def traits(self):
+        return self._genome.traits
+
+    def is_alive(self) -> bool:
         return self.life > 0
 
     def interact(self, other: "Creature"):
@@ -81,7 +85,7 @@ class Creature:
         # TODO: interact with other creatures
         if foods and self.food <= config.creature.max_food:
             _, location = max(foods, key=lambda x: x[0])
-            # _, location = max(foods, key=lambda x: x[0])
+            self.food += 1
             self.move(location)
         else:
             _, location = choice(outer)

@@ -7,12 +7,15 @@ from tqdm import trange
 from ._config import config
 from ._coordinate import Coordinate
 from ._creature import Creature
+from ._log import log
 
 
 class World:
     def __init__(self) -> None:
         self._map: np.ndarray = np.zeros((config.world.height, config.world.width), dtype=np.int8)
         self.creatures: list[Creature] = []
+        self.statistics = {}
+
         self.refresh_food()
         blanks = np.where(self._map == 0)
         for i in choice(np.arange(len(blanks[0])), config.world.init_count, replace=False):
@@ -26,12 +29,25 @@ class World:
         food_mask = random(self._map.shape) < config.world.food_rate
         self._map = np.where(food_mask, 1, self._map)
 
+    def update_statistics(self, traits: dict[str, int]):
+        """更新统计信息"""
+        for trait, value in traits.items():
+            self.statistics[trait] = self.statistics.get(trait, 0) + value
+
     def step(self, i: int) -> float:
         start = time.time()
+        lives = []
+        self.statistics.clear()
         for creature in self.creatures:
-            creature.step()
+            if creature.is_alive():
+                lives.append(creature)
+                creature.step()
+                self.update_statistics(creature.traits)
+            else:
+                self[creature._loc] = 0
         if i % config.world.food_refresh_year == 0:
             self.refresh_food()
+        self.creatures = lives
         return time.time() - start
 
     def start(self, max_round: int = 100):
@@ -39,6 +55,10 @@ class World:
         for i in trange(1, max_round + 1):
             cost = self.step(i)
             time.sleep(max(0, second_per_year - cost))
+            if not self.creatures:
+                break
+            if i % 5 == 0:
+                log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
 
     def __getitem__(self, loc: Coordinate):
         if not all((0 <= loc.x < self._map.shape[1], 0 <= loc.y < self._map.shape[0])):
