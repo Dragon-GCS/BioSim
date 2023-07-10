@@ -1,5 +1,5 @@
 import random
-from functools import cached_property
+from functools import cache
 
 from ._config import config
 
@@ -15,7 +15,7 @@ class Genome:
         _cached_traits (dict): 缓存的性状
     """
 
-    __slots__ = "_gene", "_base_num", "__dict__"
+    __slots__ = "_gene", "_base_num"
 
     def __init__(self, gene: int = 0):
         self._base_num = config.gene.base_num
@@ -27,13 +27,15 @@ class Genome:
     def __str__(self) -> str:
         return f"{self._gene:0{self._base_num}b}"
 
+    def __hash__(self) -> int:
+        return self._gene
+
     def mutate(self) -> bool:
         """根据概率将随机一位碱基进行突变，并清空缓存的性状"""
         if random.random() > config.gene.mutation_rate:
             return False
         position = random.randint(0, self._base_num - 1)
         self._gene ^= 1 << position
-        delattr(self, "traits")
         return True
 
     def recombine(self, other: "Genome") -> "Genome":
@@ -45,7 +47,8 @@ class Genome:
 
     __and__ = recombine
 
-    @cached_property
+    @property
+    @cache
     def traits(self) -> dict:
         """根据基因获取性状, 并缓存。计算方法为基因不断右移，通过掩码获取密码子，再根据密码子表获取性状。
 
