@@ -1,3 +1,4 @@
+from collections import defaultdict
 import random
 from functools import cache
 
@@ -49,7 +50,7 @@ class Genome:
 
     @property
     @cache
-    def traits(self) -> dict:
+    def traits(self) -> defaultdict[str, int]:
         """根据基因获取性状, 并缓存。计算方法为基因不断右移，通过掩码获取密码子，再根据密码子表获取性状。
 
         例子:
@@ -57,9 +58,8 @@ class Genome:
             第一个性状为 gene >> 0 & MASK = 0b101 = 5，取密码子表索引为5的性状。
             第二个性状为 gene >> 3 & MASK = 0b111 = 7，取密码子表索引为7的性状。
         """
-        traits = {}
+        traits = defaultdict(int)
         for i in range(0, self._base_num, config.gene.coden_length):
             trait = config.gene.coden_table[self._gene >> i & MASK]
-            if trait:
-                traits[trait] = traits.get(trait, 0) + 1
+            traits[trait] += 1
         return traits
