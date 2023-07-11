@@ -100,7 +100,6 @@ class Config(BaseModel):
 try:
     config = Config.load()
     config.set_seed()
-    pprint(config.model_dump(), indent=2, sort_dicts=False)
 except ValidationError as e:
     print("配置文件错误：")
     pprint(e.errors())

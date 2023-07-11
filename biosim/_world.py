@@ -15,8 +15,8 @@ class World:
     def __init__(self) -> None:
         self._map: np.ndarray = np.zeros((config.world.height, config.world.width), dtype=np.int8)
         self.creatures: dict[Coordinate, Creature] = {}
+        self.drawer = Drawer("生物模拟器")
         self.statistics = {}
-
         self.refresh_food()
         blanks = np.where(self._map == 0)
         for i in choice(np.arange(len(blanks[0])), config.world.init_count, replace=False):
@@ -58,13 +58,18 @@ class World:
         return time.time() - start
 
     def start(self, max_round: int = 100):
-        with Drawer("生物进化模拟器") as drawer:
-            for i in trange(1, max_round + 1):
+        print(config.model_dump_json(indent=2))
+        for i in trange(1, max_round + 1):
+            try:
                 cost = self.step(i)
                 delay = max(1, int((config.world.second_per_year - cost) * 1000))
-                drawer.draw_map(self._map, delay)
-                if i % 5 == 0:
-                    log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
+                self.drawer.queue.put((self._map, delay))
+            except KeyboardInterrupt:
+                if input("Press q to exit...\n") == "q":
+                    break
+            if i % 5 == 0:
+                log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
+        self.drawer.close()
 
     def __getitem__(self, loc: Coordinate):
         if not all((0 <= loc.x < self._map.shape[1], 0 <= loc.y < self._map.shape[0])):
