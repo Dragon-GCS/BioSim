@@ -7,8 +7,8 @@ from tqdm import trange
 from ._config import config
 from ._coordinate import Coordinate
 from ._creature import Creature
-from ._draw import Drawer
 from ._log import log
+from .utils import Drawer, Recorder
 
 
 class World:
@@ -16,7 +16,7 @@ class World:
         self._map: np.ndarray = np.zeros((config.world.height, config.world.width), dtype=np.int8)
         self.creatures: dict[Coordinate, Creature] = {}
         self.drawer = Drawer("生物模拟器")
-        self.statistics = {}
+        self.recorder = Recorder()
         self.refresh_food()
         blanks = np.where(self._map == 0)
         for i in choice(np.arange(len(blanks[0])), config.world.init_count, replace=False):
@@ -37,22 +37,16 @@ class World:
         food_mask = (random(self._map.shape) < config.world.food_rate) & (self._map == 0)
         self._map = np.where(food_mask, 1, self._map)
 
-    def update_statistics(self, creature: Creature):
-        """更新统计信息"""
-        for trait, value in creature.traits.items():
-            self.statistics[trait] = self.statistics.get(trait, 0) + value
-        sex = "雌" if creature.sex else "雄"
-        self.statistics[sex] = self.statistics.get(sex, 0) + 1
-
     def step(self, i: int) -> float:
         start = time.time()
-        self.statistics.clear()
+        self.recorder.clear()
         for creature in list(self.creatures.values()):
             self.remove_creature(creature)
             if creature.is_alive():
                 creature.step()
                 self.add_creature(creature)
-                self.update_statistics(creature)
+                self.recorder.record(creature)
+        self.recorder.done()
         if i % config.world.food_refresh_year == 0:
             self.refresh_food()
         return time.time() - start
@@ -68,7 +62,7 @@ class World:
                 if input("Press q to exit...\n") == "q":
                     break
             if i % 5 == 0:
-                log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
+                log.debug(f"第{i}年，共有{len(self.creatures)}个生物")
         self.drawer.close()
 
     def __getitem__(self, loc: Coordinate):

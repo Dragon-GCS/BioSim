@@ -7,6 +7,7 @@ name = 'BioSim'
 version = '0.0.1'
 dependencies = [
     'loguru',
+    'matplotlib',
     'numpy',
     'opencv-python',
     'pydantic',

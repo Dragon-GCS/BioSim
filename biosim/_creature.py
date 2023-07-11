@@ -39,6 +39,20 @@ class Creature:
     def __hash__(self) -> int:
         return hash(self._genome)
 
+    def __getstate__(self) -> dict:
+        """序列化"""
+        return {
+            "life": self.life,
+            "genome": self._genome,
+            "food": self.food,
+        }
+
+    def __setstate__(self, state):
+        """反序列化"""
+        self._genome = state["genome"]
+        self.food = state["food"]
+        self.life = state["life"]
+
     @property
     @cache
     def sex(self):

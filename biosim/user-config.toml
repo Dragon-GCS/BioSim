@@ -3,13 +3,13 @@ seed = 0
 
 [world]
 # 世界宽度
-width = 512
+width = 128
 # 世界高度
-height = 512
+height = 128
 # 食物密度
-food_rate = 0.01
+food_rate = 0.007
 # 食物刷新频率（年）
-food_refresh_year = 10
+food_refresh_year = 5
 # 初始生物数量
 init_count = 100
 # 每秒回合数
