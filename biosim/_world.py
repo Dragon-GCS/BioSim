@@ -14,7 +14,7 @@ from ._log import log
 class World:
     def __init__(self) -> None:
         self._map: np.ndarray = np.zeros((config.world.height, config.world.width), dtype=np.int8)
-        self.creatures: list[Creature] = []
+        self.creatures: dict[Coordinate, Creature] = {}
         self.statistics = {}
 
         self.refresh_food()
@@ -22,33 +22,39 @@ class World:
         for i in choice(np.arange(len(blanks[0])), config.world.init_count, replace=False):
             x, y = int(blanks[1][i]), int(blanks[0][i])
             creature = Creature(Coordinate(x, y), self)
-            self._map[y][x] = 2
-            self.creatures.append(creature)
+            self.add_creature(creature)
+
+    def add_creature(self, creature: Creature):
+        self[creature._loc] = 2
+        self.creatures[creature._loc] = creature
+
+    def remove_creature(self, creature: Creature) -> Creature | None:
+        self[creature._loc] = 0
+        return self.creatures.pop(creature._loc, None)
 
     def refresh_food(self):
         # 空地上随机生成食物并在地图上标记为1
-        food_mask = random(self._map.shape) < config.world.food_rate
+        food_mask = (random(self._map.shape) < config.world.food_rate) & (self._map == 0)
         self._map = np.where(food_mask, 1, self._map)
 
-    def update_statistics(self, traits: dict[str, int]):
+    def update_statistics(self, creature: Creature):
         """更新统计信息"""
-        for trait, value in traits.items():
+        for trait, value in creature.traits.items():
             self.statistics[trait] = self.statistics.get(trait, 0) + value
+        sex = "雌" if creature.sex else "雄"
+        self.statistics[sex] = self.statistics.get(sex, 0) + 1
 
     def step(self, i: int) -> float:
         start = time.time()
-        lives = []
         self.statistics.clear()
-        for creature in self.creatures:
+        for creature in list(self.creatures.values()):
+            self.remove_creature(creature)
             if creature.is_alive():
-                lives.append(creature)
                 creature.step()
-                self.update_statistics(creature.traits)
-            else:
-                self[creature._loc] = 0
+                self.add_creature(creature)
+                self.update_statistics(creature)
         if i % config.world.food_refresh_year == 0:
             self.refresh_food()
-        self.creatures = lives
         return time.time() - start
 
     def start(self, max_round: int = 100):

@@ -38,8 +38,9 @@ class WorldConfig(BaseModel):
 class CreatureConfig(BaseModel):
     """生物相关配置"""
 
+    adult_age: int = 18  # 成年年龄
     max_food: int = 3  # 食物上限
-    life: int = 30  # 生命值
+    life: int = 80  # 最大寿命
 
 
 class GeneConfig(BaseModel):

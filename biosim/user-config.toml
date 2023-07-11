@@ -16,19 +16,20 @@ init_count = 100
 year_per_second = 30
 
 [creature]
-
+# 最低交配年龄
+adult_age = 18
 # 最大携带食物数
 max_food = 3
-# 初始寿命
-life = 40
+# 最大寿命
+life = 80
 
 [gene]
 # 初始基因数量
-init_gene_count = 8
+init_gene_count = 64
 # 基因密码子长度
 coden_length = 3
 # 基因密码子表, 0固定表示空白基因，表长度必须等于2^coden_length
-coden_table = ["", "智力", "智力", "体力", "体力", "体力", "幸运", "外貌"]
+coden_table = ["外貌", "智力", "智力", "体力", "体力", "体力", "幸运", "外貌"]
 # 基因突变率
 mutation_rate = 1e-5
 
