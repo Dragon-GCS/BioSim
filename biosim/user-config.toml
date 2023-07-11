@@ -31,3 +31,9 @@ coden_length = 3
 coden_table = ["", "智力", "智力", "体力", "体力", "体力", "幸运", "外貌"]
 # 基因突变率
 mutation_rate = 1e-5
+
+[ui]
+# UI宽度
+width = 512
+# UI高度
+height = 512

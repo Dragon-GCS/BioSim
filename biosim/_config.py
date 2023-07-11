@@ -29,6 +29,11 @@ class WorldConfig(BaseModel):
         ), f"初始生物数量过多：{self.init_count} >= {self.width} * {self.height}"
         return self
 
+    @computed_field
+    @property
+    def second_per_year(self) -> float:
+        return 1 / self.year_per_second
+
 
 class CreatureConfig(BaseModel):
     """生物相关配置"""
@@ -59,6 +64,11 @@ class GeneConfig(BaseModel):
         return self.init_gene_count * self.coden_length
 
 
+class UIConfig(BaseModel):
+    width: int = 512
+    height: int = 512
+
+
 class Config(BaseModel):
     """
     Class for holding configuration parameters for the BioSim simulation.
@@ -68,6 +78,7 @@ class Config(BaseModel):
     world: WorldConfig = WorldConfig()
     gene: GeneConfig = GeneConfig()
     creature: CreatureConfig = CreatureConfig()
+    ui: UIConfig = UIConfig()
 
     def set_seed(self, seed: int = 0):
         self.seed = seed or self.seed

@@ -7,6 +7,7 @@ from tqdm import trange
 from ._config import config
 from ._coordinate import Coordinate
 from ._creature import Creature
+from ._draw import Drawer
 from ._log import log
 
 
@@ -51,14 +52,13 @@ class World:
         return time.time() - start
 
     def start(self, max_round: int = 100):
-        second_per_year = round(1 / config.world.year_per_second, 3)
-        for i in trange(1, max_round + 1):
-            cost = self.step(i)
-            time.sleep(max(0, second_per_year - cost))
-            if not self.creatures:
-                break
-            if i % 5 == 0:
-                log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
+        with Drawer("生物进化模拟器") as drawer:
+            for i in trange(1, max_round + 1):
+                cost = self.step(i)
+                delay = max(1, int((config.world.second_per_year - cost) * 1000))
+                drawer.draw_map(self._map, delay)
+                if i % 5 == 0:
+                    log.debug(f"第{i}年，共有{len(self.creatures)}个生物，{self.statistics}")
 
     def __getitem__(self, loc: Coordinate):
         if not all((0 <= loc.x < self._map.shape[1], 0 <= loc.y < self._map.shape[0])):

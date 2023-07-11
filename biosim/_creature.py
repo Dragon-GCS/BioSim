@@ -59,6 +59,7 @@ class Creature:
 
     def move(self, location: Coordinate):
         self._loc = location
+        self.map[location] = 2
 
     def step(self):
         """从自身位置开始，顺时针扫描周围的食物和生物。
