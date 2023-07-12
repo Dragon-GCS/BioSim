@@ -81,7 +81,6 @@ class Worker:
                 self.handle(item)
             except Exception as e:
                 print(e)
-                break
             self.queue.task_done()
 
     def handle(self, item):
@@ -117,7 +116,7 @@ class Drawer(Worker):
         ).copy()
         # compute fps, foods and creatures
         self.frames += 1
-        fps = self.frames / (time.time() - self.start_time)
+        fps = self.frames / ((time.time() - self.start_time) or 1)
         foods, creatures = (_map == 1).sum(), (_map == 2).sum()
         put_text = partial(
             cv2.putText,
@@ -142,9 +141,12 @@ class Recorder(Worker):
 
     def __init__(self) -> None:
         self.clear()
+        self.years = 0
         self.fig = plt.figure(figsize=(12, 6), dpi=100)
         self.trait_ax = self.fig.add_subplot(1, 2, 1)
+        self.trait_ax.set_xlabel("特征分布")
         self.age_ax = self.fig.add_subplot(1, 2, 2)
+        self.age_ax.set_xlabel("年龄分布")
         super().__init__()
 
     def handle(self, creature: Creature | None):
@@ -158,15 +160,21 @@ class Recorder(Worker):
         self.statistics["ages"].append(creature.life)
 
     def draw(self):
+        self.years += 1
+        self.fig.suptitle(f"第 {self.years} 年")
         self.trait_ax.clear()
         self.trait_ax.bar(
             list(self.statistics["traits"].keys()), self.statistics["traits"].values()
         )
         self.age_ax.clear()
-        self.age_ax.hist(self.statistics["ages"], bins=10, rwidth=0.8)
-        self.age_ax.set_xlim(0, config.creature.life)
+        self.age_ax.hist(
+            self.statistics["ages"],
+            bins=range(0, config.creature.life + 1, 10),
+            rwidth=0.8,
+            range=(0, config.creature.life),
+        )
         self.fig.canvas.draw()
-        plt.pause(0.1)
+        plt.pause(0.01)
         self.clear()
 
     def done(self):
