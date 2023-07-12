@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import signal
 import sys
+import time
 import typing
+from functools import partial
 from multiprocessing import JoinableQueue, Process
 from typing import Iterator
 
@@ -17,6 +19,12 @@ if typing.TYPE_CHECKING:
     from ._creature import Creature
 
 UI_SIZE = (config.ui.width, config.ui.height)
+CV2_FONT_CONFIG = {
+    "fontFace": cv2.FONT_HERSHEY_COMPLEX,
+    "fontScale": 0.5,
+    "thickness": 1,
+}
+(_, CV2_TEXT_HEIGHT), _ = cv2.getTextSize("test", **CV2_FONT_CONFIG)
 
 match sys.platform:
     case "win32":
@@ -91,16 +99,36 @@ class Drawer(Worker):
 
     def __init__(self, window_name: str) -> None:
         self.window_name = window_name
+        self.frames = 0
+        self.start_time = 0
+        self.text_template = "FPS: {:.1f}\nFoods: {:d}\nCreatures: {:d}"
         super().__init__()
 
     def handle(self, item: tuple[np.ndarray, int]):
+        if not self.start_time:
+            self.start_time = time.time()
         _map, delay = item
+        # convert matrix to image
         resized_map = cv2.resize(_map, UI_SIZE, interpolation=cv2.INTER_NEAREST)
         color_map = (
             np.stack([np.zeros_like(resized_map), (resized_map == 1), resized_map == 2])
             .transpose(1, 2, 0)
             .astype(np.float32)
+        ).copy()
+        # compute fps, foods and creatures
+        self.frames += 1
+        fps = self.frames / (time.time() - self.start_time)
+        foods, creatures = (_map == 1).sum(), (_map == 2).sum()
+        put_text = partial(
+            cv2.putText,
+            color_map,
+            **CV2_FONT_CONFIG,
+            color=(255, 255, 255),
         )
+        # add text to image
+        for i, text in enumerate(self.text_template.format(fps, foods, creatures).split("\n")):
+            put_text(text, (10, 20 + i * CV2_TEXT_HEIGHT))
+        # display image
         cv2.imshow(self.window_name, color_map)
         cv2.waitKey(delay)
 
