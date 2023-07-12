@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import signal
+import sys
 import typing
 from multiprocessing import JoinableQueue, Process
 from typing import Iterator
@@ -17,7 +18,13 @@ if typing.TYPE_CHECKING:
 
 UI_SIZE = (config.ui.width, config.ui.height)
 
-plt.rcParams["font.sans-serif"] = ["SimHei"]
+match sys.platform:
+    case "win32":
+        plt.rcParams["font.sans-serif"] = ["SimHei"]
+    case "darwin":
+        plt.rcParams["font.sans-serif"] = ["PingFang HK"]
+    case _:
+        pass
 
 
 def spiral_scan(max_radius: int) -> Iterator[tuple[int, Coordinate]]:
@@ -107,17 +114,17 @@ class Recorder(Worker):
 
     def __init__(self) -> None:
         self.clear()
-        fig = plt.figure(figsize=(12, 6), dpi=100)
-        self.trait_ax = fig.add_subplot(1, 2, 1)
-        self.age_ax = fig.add_subplot(1, 2, 2)
+        self.fig = plt.figure(figsize=(12, 6), dpi=100)
+        self.trait_ax = self.fig.add_subplot(1, 2, 1)
+        self.age_ax = self.fig.add_subplot(1, 2, 2)
         super().__init__()
 
     def handle(self, creature: Creature | None):
         if creature is None:
             self.draw()
             return
-        for trait in creature.traits:
-            self.statistics["traits"][trait] += 1
+        for trait, value in creature.traits.items():
+            self.statistics["traits"][trait] += value
         sex = "雄性" if creature.sex else "雌性"
         self.statistics["traits"][sex] += 1
         self.statistics["ages"].append(creature.life)
@@ -128,8 +135,10 @@ class Recorder(Worker):
             list(self.statistics["traits"].keys()), self.statistics["traits"].values()
         )
         self.age_ax.clear()
-        self.age_ax.hist(self.statistics["ages"], bins=10)
-        plt.pause(0.01)
+        self.age_ax.hist(self.statistics["ages"], bins=10, rwidth=0.8)
+        self.age_ax.set_xlim(0, config.creature.life)
+        self.fig.canvas.draw()
+        plt.pause(0.1)
         self.clear()
 
     def done(self):

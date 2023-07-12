@@ -51,7 +51,7 @@ class Creature:
         """反序列化"""
         self._genome = state["genome"]
         self.food = state["food"]
-        self.life = state["life"]
+        self.life = min(state["life"], 80)
 
     @property
     @cache

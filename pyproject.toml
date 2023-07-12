@@ -23,6 +23,3 @@ email = '878173121@qq.com'
 dev = ['viztracer']
 [tool.setuptools]
 packages = ['BioSim']
-
-[tool.start]
-dev-dependencies = []

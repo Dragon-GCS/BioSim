@@ -39,7 +39,6 @@ class World:
 
     def step(self, i: int) -> float:
         start = time.time()
-        self.recorder.clear()
         for creature in list(self.creatures.values()):
             self.remove_creature(creature)
             if creature.is_alive():
@@ -59,11 +58,13 @@ class World:
                 delay = max(1, int((config.world.second_per_year - cost) * 1000))
                 self.drawer.queue.put((self._map, delay))
             except KeyboardInterrupt:
-                if input("Press q to exit...\n") == "q":
+                if input("Input q to exit...\n") == "q":
                     break
             if i % 5 == 0:
                 log.debug(f"第{i}年，共有{len(self.creatures)}个生物")
+        input("Wait...")
         self.drawer.close()
+        self.recorder.close()
 
     def __getitem__(self, loc: Coordinate):
         if not all((0 <= loc.x < self._map.shape[1], 0 <= loc.y < self._map.shape[0])):
